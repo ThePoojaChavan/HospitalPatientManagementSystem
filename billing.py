@@ -62,7 +62,7 @@ def open_billing_window():
                 return
 
             # Insert the bill into the Billing table
-            cursor.execute("""
+            cursor.execute(""" 
                 INSERT INTO Billing (Appointment_ID, Patient_ID, Amount, Status, Bill_Date)
                 VALUES (?, ?, ?, ?, ?)
             """, (app_id, patient_id, amount, "Pending", billing_date))
@@ -91,14 +91,17 @@ def open_billing_window():
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT b.Bill_ID, b.Appointment_ID, b.Patient_ID, b.Amount, b.Status, b.Bill_Date
-                FROM Billing b
-                ORDER BY b.Bill_Date DESC
+                SELECT Patients.First_Name, Patients.Last_Name, Billing.Bill_ID, Billing.Appointment_ID, 
+                       Billing.Patient_ID, Billing.Amount, Billing.Status, Billing.Bill_Date
+                FROM Billing
+                JOIN Patients ON Billing.Patient_ID = Patients.Patient_ID
+                ORDER BY Billing.Bill_Date DESC
             """)
             bills = cursor.fetchall()
             listbox.delete(0, tk.END)
             for bill in bills:
-                listbox.insert(tk.END, f"Bill ID: {bill[0]} | Appointment ID: {bill[1]} | Patient ID: {bill[2]} | Amount: {bill[3]} | Status: {bill[4]} | Date: {bill[5]}")
+                listbox.insert(tk.END, f"Patient: {bill[0]} {bill[1]} | Bill ID: {bill[2]} | Appointment ID: {bill[3]} | "
+                                       f"Amount: {bill[5]} | Status: {bill[6]} | Date: {bill[7]}")
             conn.close()
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load bills: {e}")
