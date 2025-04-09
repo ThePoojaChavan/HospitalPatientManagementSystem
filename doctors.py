@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 from db_connection import get_connection
 
-def open_doctor_window():
-    window = tk.Toplevel()
+def open_doctor_window(root):
+    window = tk.Toplevel(root)
     window.title("🩺 Add Doctor")
     window.geometry("500x400")
 

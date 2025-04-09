@@ -4,8 +4,8 @@ import sqlite3
 from db_connection import get_connection
 from datetime import datetime
 
-def open_billing_window():
-    window = tk.Toplevel()
+def open_billing_window(root):
+    window = tk.Toplevel(root)
     window.title("💵 Billing Management")
     window.geometry("700x600")
 

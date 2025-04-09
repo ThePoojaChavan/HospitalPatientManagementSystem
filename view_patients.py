@@ -10,6 +10,8 @@ def view_patients_window():
     window.title("👀 View Patients")
     window.geometry("800x400")
 
+    window.state('zoomed')  # Maximize the window
+
     # Create a Treeview widget to display patient data
     tree = ttk.Treeview(window, columns=("ID", "First Name", "Last Name", "DOB", "Gender", "Phone", "Email"), show="headings")
 
