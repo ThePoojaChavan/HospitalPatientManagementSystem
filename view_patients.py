@@ -53,4 +53,4 @@ def view_patients_window():
         print(f"Error: {e}")
     
     # Add a button to close the window
-    tk.Button(window, text="Close", command=window.destroy, bg="lightcoral", width=20).pack(pady=10)
+    tk.Button(window, text="Close", command=window.destroy, bg="red", fg="white", width=20).pack(pady=10)

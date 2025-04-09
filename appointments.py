@@ -203,7 +203,7 @@ def open_appointments_window(root):
         window.destroy()
         root.deiconify()
 
-    tk.Button(window, text="Cancel Appointment ❌", command=cancel_appointment, bg="orange", width=30).pack(pady=5)
+    tk.Button(window, text="Cancel Appointment ❌", command=cancel_appointment, bg="red", fg="white", width=30).pack(pady=5)
     tk.Button(window, text="Go Back to Main Menu ⬅️", command=go_back_to_main_menu, bg="lightblue", width=30).pack(pady=5)
 
     load_appointments()

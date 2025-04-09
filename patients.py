@@ -69,5 +69,5 @@ def open_patient_window():
             window.lift()  # Bring the registration window to the front if No is clicked
 
     # Buttons
-    tk.Button(window, text="Register ✅", command=register_patient, bg="lightgreen", width=20).grid(row=len(labels), columnspan=2, pady=10)
-    tk.Button(window, text="Cancel ❌", command=cancel_registration, bg="lightcoral", width=20).grid(row=len(labels)+1, columnspan=2, pady=5)
+    tk.Button(window, text="Register ✅", command=register_patient, bg="green",fg="white", width=20).grid(row=len(labels), columnspan=2, pady=10)
+    tk.Button(window, text="Cancel ❌", command=cancel_registration, bg="red", fg="white", width=20).grid(row=len(labels)+1, columnspan=2, pady=5)
