@@ -1,18 +1,20 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-import sqlite3
 from datetime import datetime
 from db_connection import get_connection
 
+
 def open_appointments_window(root):
+    # Create a new window for appointments
     window = tk.Toplevel()
     window.title("📅 Appointments Management")
     window.geometry("800x650")
 
+    # Frame for widgets
     frame = tk.Frame(window)
     frame.pack(pady=20)
 
-    # Fetch Patients and Doctors
+    # Fetch Patients and Doctors from the database
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -24,7 +26,7 @@ def open_appointments_window(root):
 
     conn.close()
 
-    # Variables
+    # Variables for the selected patient, doctor, date, time
     selected_patient = tk.StringVar()
     selected_doctor = tk.StringVar()
     selected_day = tk.StringVar()
@@ -45,7 +47,7 @@ def open_appointments_window(root):
     ])
     doctor_dropdown.grid(row=1, column=1, padx=10, pady=5)
 
-    # Appointment Date
+    # Appointment Date Entry
     tk.Label(frame, text="Appointment Date (YYYY-MM-DD)").grid(row=2, column=0, padx=10, pady=5, sticky="e")
     app_date_entry = tk.Entry(frame, textvariable=app_date_var, width=30)
     app_date_entry.grid(row=2, column=1, pady=5, padx=10)
@@ -60,43 +62,36 @@ def open_appointments_window(root):
     time_dropdown = ttk.Combobox(frame, textvariable=selected_time, width=40)
     time_dropdown.grid(row=4, column=1, padx=10, pady=5)
 
+    # Fetch availability when doctor is selected
     def fetch_availability():
-        # Fetch Doctor Availability based on selected doctor
         doctor_id = selected_doctor.get().split(" - ")[0]
 
         conn = get_connection()
         cursor = conn.cursor()
-
-        # Fetch Available Days and Times for the selected doctor
         cursor.execute("""
             SELECT Availability_Day, Start_Time, End_Time 
             FROM Doctor_Availability 
             WHERE Doctor_ID = ?
         """, (doctor_id,))
         availability = cursor.fetchall()
+        conn.close()
 
-        # Update the Available Days dropdown
+        # Populate the available days and times
         days = sorted(set(avail[0] for avail in availability))
         day_dropdown['values'] = days
 
-        # Update the Available Times dropdown based on selected day
-        def update_times(*args):  # Accept all three arguments
+        def update_times(*args):
             selected_avail_day = selected_day.get()
-
-            # Get the start and end times for the selected day
             times = sorted(set(
                 f"{avail[1]} - {avail[2]}" for avail in availability if avail[0] == selected_avail_day
             ))
-
             time_dropdown['values'] = times
 
         selected_day.trace_add("write", update_times)
 
-        conn.close()
-
-    # Update availability when doctor is selected
     doctor_dropdown.bind("<<ComboboxSelected>>", lambda event: fetch_availability())
 
+    # Register Appointment Function
     def register_appointment():
         try:
             patient_id = selected_patient.get().split(" - ")[0]
@@ -104,41 +99,46 @@ def open_appointments_window(root):
             app_date = app_date_var.get().strip()
             app_time = selected_time.get().strip()
 
-             # Check if appointment date is entered
+            if not app_time:
+                messagebox.showerror("Missing Selection", "Please select a time slot.")
+                window.lift()  # Ensure the window stays in front after error
+                return
+
             if not app_date:
                 messagebox.showerror("Invalid Input", "Appointment date must be entered.")
-                app_date_entry.focus_set()  # Focus back on the appointment date entry
+                app_date_entry.focus_set()
+                window.lift()  # Ensure the window stays in front after error
                 return
-            
-            # Validate date/time format
+
             app_datetime_str = f"{app_date} {app_time.split(' - ')[0]}"
             app_datetime = datetime.strptime(app_datetime_str, "%Y-%m-%d %I:%M %p")
 
             if app_datetime <= datetime.now():
                 messagebox.showwarning("Invalid Date/Time", "The appointment must be scheduled for a future time.")
+                window.lift()  # Ensure the window stays in front after error
                 return
 
             conn = get_connection()
             cursor = conn.cursor()
 
-            # Check patient and doctor existence
             cursor.execute("SELECT COUNT(*) FROM Patients WHERE Patient_ID = ?", (patient_id,))
             if cursor.fetchone()[0] == 0:
                 messagebox.showerror("Invalid Patient", "Patient ID does not exist.")
                 conn.close()
+                window.lift()  # Ensure the window stays in front after error
                 return
 
             cursor.execute("SELECT COUNT(*) FROM Doctors WHERE Doctor_ID = ?", (doctor_id,))
             if cursor.fetchone()[0] == 0:
                 messagebox.showerror("Invalid Doctor", "Doctor ID does not exist.")
                 conn.close()
+                window.lift()  # Ensure the window stays in front after error
                 return
 
             cursor.execute(""" 
                 INSERT INTO Appointments (Patient_ID, Doctor_ID, App_Date, App_Time, Status)
                 VALUES (?, ?, ?, ?, ?)
             """, (patient_id, doctor_id, app_date, app_time, "Scheduled"))
-
             conn.commit()
             conn.close()
 
@@ -149,13 +149,16 @@ def open_appointments_window(root):
 
         except Exception as e:
             messagebox.showerror("Error", f"Error registering appointment: {e}")
+            window.lift()  # Ensure the window stays in front after error
 
+    # Register Appointment Button
     tk.Button(window, text="Register Appointment ✅", command=register_appointment, bg="lightgreen", width=30).pack(pady=10)
 
     # Appointment Listbox
     listbox = tk.Listbox(window, width=100, height=12)
     listbox.pack(pady=20)
 
+    # Load Appointments
     def load_appointments():
         try:
             conn = get_connection()
@@ -176,12 +179,15 @@ def open_appointments_window(root):
             conn.close()
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load appointments: {e}")
+            window.lift()  # Ensure the window stays in front after error
 
+    # Cancel Appointment Function
     def cancel_appointment():
         try:
             selected = listbox.curselection()
             if not selected:
                 messagebox.showwarning("No selection", "Please select an appointment to cancel.")
+                window.lift()  # Ensure the window stays in front after error
                 return
 
             item_text = listbox.get(selected[0])
@@ -198,12 +204,11 @@ def open_appointments_window(root):
 
         except Exception as e:
             messagebox.showerror("Error", f"Error cancelling appointment: {e}")
+            window.lift()  # Ensure the window stays in front after error
 
-    def go_back_to_main_menu():
-        window.destroy()
-        root.deiconify()
-
+    # Cancel Appointment and Back Buttons
     tk.Button(window, text="Cancel Appointment ❌", command=cancel_appointment, bg="red", fg="white", width=30).pack(pady=5)
-    tk.Button(window, text="Go Back to Main Menu ⬅️", command=go_back_to_main_menu, bg="lightblue", width=30).pack(pady=5)
+    tk.Button(window, text="Go Back to Main Menu ⬅️", command=window.destroy, bg="lightblue", width=30).pack(pady=5)
 
+    # Load existing appointments when the window is opened
     load_appointments()

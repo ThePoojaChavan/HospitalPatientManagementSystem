@@ -21,8 +21,10 @@ def open_doctor_window(root):
     def register_doctor():
         data = {label: entries[label].get().strip() for label in labels}
 
+        # Validate that First Name and Last Name are provided
         if not data["First Name"] or not data["Last Name"]:
             messagebox.showwarning("Missing Info", "First and Last Name are required.")
+            window.lift() # Bring the window to the front
             return
 
         try:
@@ -42,9 +44,21 @@ def open_doctor_window(root):
             conn.close()
 
             messagebox.showinfo("Success ✅", f"Doctor {data['First Name']} {data['Last Name']} added successfully!")
-            window.destroy()
+            # Keep the window open, do not destroy yet
+            # After adding a doctor, you can choose whether to reset fields or leave them as is.
+            # For now, keeping the window open
+            # window.destroy() # This is not called yet
 
         except Exception as e:
             messagebox.showerror("Error", f"Database error: {e}")
 
-    tk.Button(window, text="Add Doctor ✅", command=register_doctor, bg="lightblue", width=20).grid(row=len(labels), columnspan=2, pady=20)
+    def cancel():
+        # Confirm cancel action
+        if messagebox.askyesno("Confirm Cancel", "Are you sure you want to cancel?"):
+            window.destroy()  # Close the window and return to the main menu
+
+    # Add Doctor Button
+    tk.Button(window, text="Add Doctor ✅", command=register_doctor, bg="lightblue", width=20).grid(row=len(labels), columnspan=2, pady=10)
+
+    # Cancel Button (returns to main menu)
+    tk.Button(window, text="Cancel ❌", command=cancel, bg="lightcoral", width=20).grid(row=len(labels) + 1, columnspan=2, pady=10)
