@@ -16,8 +16,6 @@ def main():
     # Buttons
     tk.Button(root, text="🧍 Register Patient", command=open_patient_window, width=25, height=2, bg="#f0f0f0").pack(pady=10)
     tk.Button(root, text="🔍 View Patients", command=view_patients_window, width=25, height=2, bg="#f0f0f0").pack(pady=10)
-    
-    # Placeholder buttons for other modules (can implement later)
     tk.Button(root, text="🩺 Doctor Management", command=lambda: open_doctor_window(root), width=25, height=2).pack(pady=10)
     tk.Button(root, text="📅 Appointments", command=lambda: open_appointments_window(root), width=25, height=2).pack(pady=10)
     tk.Button(root, text="💵 Billing", command=lambda: open_billing_window(root), width=25, height=2).pack(pady=10)
