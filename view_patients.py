@@ -1,76 +1,125 @@
-# view_patients.py
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 from db_connection import get_connection
 
+def delete_patient(tree):
+    selected_item = tree.selection()
+    if not selected_item:
+        messagebox.showwarning("Warning", "Please select a patient to delete.")
+        return
+
+    confirm = messagebox.askyesno("Confirm", "Are you sure you want to delete this patient?")
+    if not confirm:
+        return
+
+    patient_id = tree.item(selected_item[0])['values'][0]
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM Patients WHERE Patient_ID = ?", (patient_id,))
+        conn.commit()
+        conn.close()
+
+        tree.delete(selected_item[0])
+        messagebox.showinfo("Deleted", "Patient record deleted successfully.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to delete patient: {e}")
+        print(f"Error: {e}")
+
+def edit_patient(tree):
+    selected_item = tree.selection()
+    if not selected_item:
+        messagebox.showwarning("Warning", "Please select a patient to edit.")
+        return
+
+    values = tree.item(selected_item[0])['values']
+    patient_id = values[0]
+
+    edit_win = tk.Toplevel()
+    edit_win.grab_set()  # 🔥 Add this line to allow editing even when main window has grab_set()
+    edit_win.title("✏️ Edit Patient")
+    edit_win.geometry("500x500")
+
+    fields = ["First_Name", "Last_Name", "DOB", "Gender", "Phone_Number", "Email"]
+    entries = {}
+
+    for idx, field in enumerate(fields):
+        tk.Label(edit_win, text=field).pack()
+        entry = tk.Entry(edit_win, width=40)
+        entry.insert(0, values[idx+1])  # Skip ID
+        entry.pack(pady=5)
+        entries[field] = entry
+
+    def save_changes():
+        updated_values = [entry.get() for entry in entries.values()]
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE Patients 
+                SET First_Name=?, Last_Name=?, DOB=?, Gender=?, Phone_Number=?, Email=?
+                WHERE Patient_ID = ?
+            """, (*updated_values, patient_id))
+            conn.commit()
+            conn.close()
+
+            for i, val in enumerate(updated_values):
+                tree.set(selected_item[0], column=tree["columns"][i+1], value=val)
+
+            messagebox.showinfo("Success", "Patient record updated successfully.")
+            edit_win.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update patient: {e}")
+            print(f"Error: {e}")
+
+    tk.Button(edit_win, text="Save Changes", command=save_changes, bg="lightgreen", fg="white", height=2, width=20).pack(pady=5)
+    tk.Button(edit_win, text="Cancel", command=edit_win.destroy, bg="red", fg="white", height=2, width=20).pack(pady=5)
+
 def view_patients_window():
-    # Create a new top-level window
     window = tk.Toplevel()
     window.title("👀 View Patients")
     window.geometry("800x400")
-
     window.state('zoomed')  # Maximize the window
+    window.grab_set()  # Focus on this window until it's closed
 
-    # Create a label with a larger font size
-    label = tk.Label(window, text="View Patient Information", font=("Arial", 24))  # Font size 24
-    label.pack(pady=30)  # Add some padding around the label
+    tree = ttk.Treeview(window, columns=("ID", "First Name", "Last Name", "DOB", "Gender", "Phone", "Email"), show="headings")
 
-    # Create a Treeview widget to display patient data
-    columns = ("ID", "First Name", "Last Name", "DOB", "Gender", "Street", "City", "State", "ZIP", "Phone", "Email", "Emergency Phone")
-    tree = ttk.Treeview(window, columns=columns, show="headings")
+    # Define column headings
+    for col in tree["columns"]:
+        tree.heading(col, text=col)
+        tree.column(col, anchor="center")
 
-    # Define the column headings
-    tree.heading("ID", text="ID")
-    tree.heading("First Name", text="First Name")
-    tree.heading("Last Name", text="Last Name")
-    tree.heading("DOB", text="DOB")
-    tree.heading("Gender", text="Gender")
-    tree.heading("Street", text="Street")
-    tree.heading("City", text="City")
-    tree.heading("State", text="State")
-    tree.heading("ZIP", text="ZIP")
-    tree.heading("Phone", text="Phone")
-    tree.heading("Email", text="Email")
-    tree.heading("Emergency Phone", text="Emergency Phone")
+    # Set individual column widths
+    tree.column("ID", width=50)
+    tree.column("First Name", width=150)
+    tree.column("Last Name", width=150)
+    tree.column("DOB", width=100)
+    tree.column("Gender", width=100)
+    tree.column("Phone", width=150)
+    tree.column("Email", width=200)
 
-    # Set column width
-    tree.column("ID", width=40, anchor="center")
-    tree.column("First Name", width=80, anchor="center")
-    tree.column("Last Name", width=80, anchor="center")
-    tree.column("DOB", width=80, anchor="center")
-    tree.column("Gender", width=40, anchor="center")
-    tree.column("Street", width=120, anchor="center")
-    tree.column("City", width=40, anchor="center")
-    tree.column("State", width=40, anchor="center")
-    tree.column("ZIP", width=40, anchor="center")
-    tree.column("Phone", width=100, anchor="center")
-    tree.column("Email", width=200, anchor="center")
-    tree.column("Emergency Phone", width=100, anchor="center")
-
-    # Apply a custom font to the Treeview text (for better readability)
-    tree.tag_configure("big_font", font=("Arial", 16))  # Change the font to 16
-    
-    # Place the Treeview in the window
     tree.pack(expand=True, fill=tk.BOTH, padx=20, pady=20)
 
     try:
-        # Connect to the database and fetch all patient records
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT Patient_ID, First_Name, Last_Name, DOB, Gender, Street, City, State, ZIP_Code, Phone_Number, Email, Emergency_Phone FROM Patients")
+        cursor.execute("SELECT * FROM Patients")
         rows = cursor.fetchall()
 
-        # Insert the patient records into the Treeview widget
         for row in rows:
             tree.insert("", "end", values=row)
 
         conn.close()
 
     except Exception as e:
-        # Handle any database errors
         messagebox.showerror("Error", f"Failed to retrieve patient records: {e}")
         print(f"Error: {e}")
-    
-    # Add a button to close the window
-    tk.Button(window, text="Close", command=window.destroy, bg="red", fg="white", width=20).pack(pady=10)
+
+    # Buttons
+    btn_frame = tk.Frame(window)
+    btn_frame.pack(pady=10)
+
+    tk.Button(btn_frame, text="✏️ Edit Selected", command=lambda: edit_patient(tree), bg="orange", fg="white", width=20, height=2).pack(side="left", padx=10)
+    tk.Button(btn_frame, text="🗑️ Delete Selected", command=lambda: delete_patient(tree), bg="light blue", fg="white", width=20, height=2).pack(side="left", padx=10)
+    tk.Button(btn_frame, text="❌ Close", command=window.destroy, bg="red", fg="white", width=20, height=2).pack(side="left", padx=10)
