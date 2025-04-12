@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import logging
 from db_connection import get_connection
+import datetime
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -21,18 +22,47 @@ def open_patient_window():
 
     for idx, label in enumerate(labels):
         tk.Label(window, text=label).grid(row=idx, column=0, padx=10, pady=5, sticky="e")
-        entry = tk.Entry(window, width=30)
-        entry.grid(row=idx, column=1, pady=5, padx=10)
-        entries[label] = entry
+        if label != "Gender (Male/Female)":  # Skip gender entry field
+            entry = tk.Entry(window, width=30)
+            entry.grid(row=idx, column=1, pady=5, padx=10)
+            entries[label] = entry
+
+    # Gender selection using radio buttons
+    gender_var = tk.StringVar()
+    gender_var.set("Male")  # Default selection
+
+    gender_frame = tk.Frame(window)
+    gender_frame.grid(row=3, column=1, pady=5, padx=10, sticky="w")  # Proper grid position for gender
+
+    male_rb = tk.Radiobutton(gender_frame, text="Male", variable=gender_var, value="Male")
+    male_rb.grid(row=0, column=0, padx=5)
+    female_rb = tk.Radiobutton(gender_frame, text="Female", variable=gender_var, value="Female")
+    female_rb.grid(row=0, column=1, padx=5)
+
+    # Ensure no entry widget for gender
+    # gender_entry = gender_var  # No entry widget for gender
 
     def register_patient():
-        data = {label: entries[label].get().strip() for label in labels}
+        # Get all data from entries
+        data = {label: entries[label].get().strip() if isinstance(entries[label], tk.Entry) else entries[label].get() for label in labels}
+        data["Gender (Male/Female)"] = gender_var.get()  # Get gender from radio button
 
         if not data["First Name"] or not data["Last Name"] or not data["DOB (YYYY-MM-DD)"] or not data["Gender (Male/Female)"]:
-            messagebox.showwarning("Missing Info", "Please fill in required fields: First Name, Last Name, DOB.")
-            window.lift() #Bring the registration window to the front
-            return # Return here ensures the window remains open
+            messagebox.showwarning("Missing Info", "Please fill in required fields: First Name, Last Name, DOB, and Gender.")
+            window.lift()  # Bring the registration window to the front
+            return
 
+        # Validate DOB format and ensure it's not in the future
+        try:
+            dob = datetime.datetime.strptime(data["DOB (YYYY-MM-DD)"], "%Y-%m-%d")
+            if dob > datetime.datetime.now():
+                messagebox.showwarning("Invalid Date", "DOB cannot be in the future!")
+                return
+        except ValueError:
+            messagebox.showwarning("Invalid Date Format", "Please enter DOB in YYYY-MM-DD format.")
+            return
+
+        # Try to save data to the database
         try:
             conn = get_connection()
             cursor = conn.cursor()
@@ -59,7 +89,8 @@ def open_patient_window():
             conn.close()
             messagebox.showinfo("Success ✅", f"Patient {data['First Name']} {data['Last Name']} registered successfully!")
             for entry in entries.values():
-                entry.delete(0, tk.END)
+                if isinstance(entry, tk.Entry):
+                    entry.delete(0, tk.END)
 
     def cancel_registration():
         confirm = messagebox.askyesno("Cancel", "Are you sure you want to cancel registration?")
