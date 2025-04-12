@@ -61,4 +61,4 @@ def open_doctor_window(root):
     tk.Button(window, text="Add Doctor ✅", command=register_doctor, bg="lightblue", width=20).grid(row=len(labels), columnspan=2, pady=10)
 
     # Cancel Button (returns to main menu)
-    tk.Button(window, text="Cancel ❌", command=cancel, bg="lightcoral", width=20).grid(row=len(labels) + 1, columnspan=2, pady=10)
+    tk.Button(window, text="Cancel ❌", command=cancel, bg="red", fg="white", width=20).grid(row=len(labels) + 1, columnspan=2, pady=10)

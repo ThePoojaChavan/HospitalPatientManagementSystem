@@ -80,7 +80,7 @@ def open_billing_window(root):
             messagebox.showerror("Error", f"Error generating bill: {e}")
 
     # Submit Button to generate the bill
-    tk.Button(window, text="Generate Bill ✅", command=generate_bill, bg="lightgreen", width=25).pack(pady=10)
+    tk.Button(window, text="Generate Bill ✅", command=generate_bill, bg="lightgreen",width=25).pack(pady=10)
 
     # Listbox to show bills
     listbox = tk.Listbox(window, width=100, height=10)
