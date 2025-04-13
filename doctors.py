@@ -5,7 +5,7 @@ from db_connection import get_connection
 def open_doctor_window(root):
     window = tk.Toplevel(root)
     window.title("🩺 Add Doctor")
-    window.geometry("500x400")
+    window.geometry("800x650")
 
     labels = [
         "First Name", "Last Name", "Specialization", "Phone Number"
@@ -25,7 +25,10 @@ def open_doctor_window(root):
         if not data["First Name"] or not data["Last Name"]:
             messagebox.showwarning("Missing Info", "First and Last Name are required.")
             window.lift() # Bring the window to the front
-            return
+            if not data["DOB (YYYY-MM-DD)"]:
+                entries["DOB (YYYY-MM-DD)"].focus()  # Set focus to DOB if it's missing
+            return  # Return here ensures the window remains open
+            
 
         try:
             conn = get_connection()
@@ -44,10 +47,10 @@ def open_doctor_window(root):
             conn.close()
 
             messagebox.showinfo("Success ✅", f"Doctor {data['First Name']} {data['Last Name']} added successfully!")
-            # Keep the window open, do not destroy yet
-            # After adding a doctor, you can choose whether to reset fields or leave them as is.
-            # For now, keeping the window open
-            # window.destroy() # This is not called yet
+            window.lift()
+            window.focus_force()
+            window.attributes('-topmost', 1)
+            window.after_idle(window.attributes, '-topmost', 0)
 
         except Exception as e:
             messagebox.showerror("Error", f"Database error: {e}")

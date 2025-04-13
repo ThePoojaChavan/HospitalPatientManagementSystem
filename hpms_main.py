@@ -8,7 +8,7 @@ from billing import open_billing_window
 def main():
     root = tk.Tk()
     root.title("🏥 Hospital Patient Management System")
-    root.geometry("700x800")
+    root.geometry("800x650")
     root.resizable(False, False)
 
     tk.Label(root, text="🏥 Hospital Patient Management System Main Menu", font=("Arial", 18, "bold")).pack(pady=20)

@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 def open_patient_window():
     window = tk.Toplevel()
     window.title("🧍 Register Patient")
-    window.geometry("500x600")
+    window.geometry("800x650")
 
     # Labels & Entries
     labels = [
@@ -44,8 +44,8 @@ def open_patient_window():
 
     def register_patient():
         # Get all data from entries
-        data = {label: entries[label].get().strip() if isinstance(entries[label], tk.Entry) else entries[label].get() for label in labels}
-        data["Gender (Male/Female)"] = gender_var.get()  # Get gender from radio button
+        data = {label: entries[label].get().strip() for label in labels if label != "Gender (Male/Female)"}
+        data["Gender (Male/Female)"] = gender_var.get() # Get gender from radio button
 
         if not data["First Name"] or not data["Last Name"] or not data["DOB (YYYY-MM-DD)"] or not data["Gender (Male/Female)"]:
             messagebox.showwarning("Missing Info", "Please fill in required fields: First Name, Last Name, DOB, and Gender.")
@@ -57,10 +57,16 @@ def open_patient_window():
             dob = datetime.datetime.strptime(data["DOB (YYYY-MM-DD)"], "%Y-%m-%d")
             if dob > datetime.datetime.now():
                 messagebox.showwarning("Invalid Date", "DOB cannot be in the future!")
+                window.lift()
+                entries["DOB (YYYY-MM-DD)"].focus_set()
                 return
         except ValueError:
             messagebox.showwarning("Invalid Date Format", "Please enter DOB in YYYY-MM-DD format.")
-            return
+            window.lift()
+            window.focus_force()
+            entries["DOB (YYYY-MM-DD)"].focus_set()
+            window.attributes('-topmost', 1)
+            window.after(2000,lambda:window.attributes, ('-topmost', 0))
 
         # Try to save data to the database
         try:

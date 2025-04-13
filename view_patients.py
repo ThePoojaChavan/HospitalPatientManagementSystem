@@ -37,7 +37,7 @@ def edit_patient(tree):
     patient_id = values[0]
 
     edit_win = tk.Toplevel()
-    edit_win.grab_set()  # 🔥 Add this line to allow editing even when main window has grab_set()
+    edit_win.grab_set()  # Allow editing even when the main window is active
     edit_win.title("✏️ Edit Patient")
     edit_win.geometry("500x500")
 
@@ -47,7 +47,7 @@ def edit_patient(tree):
     for idx, field in enumerate(fields):
         tk.Label(edit_win, text=field).pack()
         entry = tk.Entry(edit_win, width=40)
-        entry.insert(0, values[idx+1])  # Skip ID
+        entry.insert(0, values[idx+1])  # Skip Patient ID
         entry.pack(pady=5)
         entries[field] = entry
 
@@ -69,6 +69,11 @@ def edit_patient(tree):
 
             messagebox.showinfo("Success", "Patient record updated successfully.")
             edit_win.destroy()
+            tree.selection_set(selected_item[0])  # Reselect the edited item
+            #tree.selection_clear()  # Deselect the edited item
+            
+            
+
         except Exception as e:
             messagebox.showerror("Error", f"Failed to update patient: {e}")
             print(f"Error: {e}")
@@ -81,9 +86,9 @@ def view_patients_window():
     window.title("👀 View Patients")
     window.geometry("800x400")
     window.state('zoomed')  # Maximize the window
-    window.grab_set()  # Focus on this window until it's closed
+    #window.grab_set()  # Focus on this window until it's closed
 
-    tree = ttk.Treeview(window, columns=("ID", "First Name", "Last Name", "DOB", "Gender", "Phone", "Email"), show="headings")
+    tree = ttk.Treeview(window, columns=("Patient ID", "First Name", "Last Name", "DOB", "Gender", "Street", "City","State", "ZIP", "Phone", "Email","Emergency Phone"), show="headings")
 
     # Define column headings
     for col in tree["columns"]:
@@ -91,13 +96,18 @@ def view_patients_window():
         tree.column(col, anchor="center")
 
     # Set individual column widths
-    tree.column("ID", width=50)
+    tree.column("Patient ID", width=50)
     tree.column("First Name", width=150)
     tree.column("Last Name", width=150)
     tree.column("DOB", width=100)
     tree.column("Gender", width=100)
-    tree.column("Phone", width=150)
-    tree.column("Email", width=200)
+    tree.column("Street", width=150)
+    tree.column("City", width=100)
+    tree.column("State", width=100)
+    tree.column("ZIP", width=100)
+    tree.column("Phone", width=100)
+    tree.column("Email", width=150)
+    tree.column("Emergency Phone", width=100)
 
     tree.pack(expand=True, fill=tk.BOTH, padx=20, pady=20)
 
@@ -123,3 +133,5 @@ def view_patients_window():
     tk.Button(btn_frame, text="✏️ Edit Selected", command=lambda: edit_patient(tree), bg="orange", fg="white", width=20, height=2).pack(side="left", padx=10)
     tk.Button(btn_frame, text="🗑️ Delete Selected", command=lambda: delete_patient(tree), bg="light blue", fg="white", width=20, height=2).pack(side="left", padx=10)
     tk.Button(btn_frame, text="❌ Close", command=window.destroy, bg="red", fg="white", width=20, height=2).pack(side="left", padx=10)
+
+

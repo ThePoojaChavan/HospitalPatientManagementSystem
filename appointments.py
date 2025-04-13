@@ -147,6 +147,11 @@ def open_appointments_window(root):
             selected_time.set("")
             load_appointments()
 
+            window.lift()
+            window.focus_force()
+            window.attributes('-topmost', 1)
+            window.after_idle(window.attributes, '-topmost', 0)
+
         except Exception as e:
             messagebox.showerror("Error", f"Error registering appointment: {e}")
             window.lift()  # Ensure the window stays in front after error
@@ -195,12 +200,28 @@ def open_appointments_window(root):
 
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("UPDATE Appointments SET Status = ? WHERE Appointment_ID = ?", ("Cancelled", appt_id))
-            conn.commit()
-            conn.close()
 
-            messagebox.showinfo("Cancelled", "Appointment has been cancelled.")
+            # 🔍 Check current status
+            cursor.execute("SELECT Status FROM Appointments WHERE Appointment_ID = ?", (appt_id,))
+            result = cursor.fetchone()
+
+            if result:
+                current_status = result[0]
+                if current_status in ['Cancelled', 'Completed']:
+                    messagebox.showwarning("Cannot Cancel", f"Appointment is already {current_status}.")
+                else:
+                    cursor.execute("UPDATE Appointments SET Status = ? WHERE Appointment_ID = ?", ("Cancelled", appt_id))
+                    conn.commit()
+                    messagebox.showinfo("Cancelled", "Appointment has been cancelled.")
+            else:
+                messagebox.showerror("Error", "Appointment ID not found.")
+            
+            conn.close()
             load_appointments()
+            window.lift()
+            window.focus_force()
+            window.attributes('-topmost', 1)
+            window.after_idle(window.attributes, '-topmost', 0)
 
         except Exception as e:
             messagebox.showerror("Error", f"Error cancelling appointment: {e}")

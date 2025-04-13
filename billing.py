@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk  # Import ttk for Combobox
 import sqlite3
 from db_connection import get_connection
 from datetime import datetime
@@ -7,36 +8,65 @@ from datetime import datetime
 def open_billing_window(root):
     window = tk.Toplevel(root)
     window.title("💵 Billing Management")
-    window.geometry("700x600")
+    window.geometry("800x650")
 
     # Create a frame for the billing form
     frame = tk.Frame(window)
     frame.pack(pady=20)
 
-    # Labels & Entries for Billing
+    # Labels for Billing
     labels = [
         "Appointment ID", "Patient ID", "Amount", "Billing Date (YYYY-MM-DD)"
     ]
     entries = {}
 
-    for idx, label in enumerate(labels):
-        tk.Label(frame, text=label).grid(row=idx, column=0, padx=10, pady=5, sticky="e")
+    # Create Entry fields for Amount and Billing Date
+    for idx, label in enumerate(labels[2:]):  # Start from 2 because Appointment ID and Patient ID will use dropdown
+        tk.Label(frame, text=label).grid(row=idx + 2, column=0, padx=10, pady=5, sticky="e")
         entry = tk.Entry(frame, width=30)
-        entry.grid(row=idx, column=1, pady=5, padx=10)
+        entry.grid(row=idx + 2, column=1, pady=5, padx=10)
         entries[label] = entry
 
-    app_id_entry = entries["Appointment ID"]
-    patient_id_entry = entries["Patient ID"]
-    amount_entry = entries["Amount"]
-    billing_date_entry = entries["Billing Date (YYYY-MM-DD)"]
+    # Create Combobox for Appointment ID and Patient ID
+    app_id_combobox = ttk.Combobox(frame, width=30)
+    patient_id_combobox = ttk.Combobox(frame, width=30)
+
+    tk.Label(frame, text="Appointment ID").grid(row=0, column=0, padx=10, pady=5, sticky="e")
+    app_id_combobox.grid(row=0, column=1, pady=5, padx=10)
+
+    tk.Label(frame, text="Patient ID").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    patient_id_combobox.grid(row=1, column=1, pady=5, padx=10)
+
+    # Function to populate comboboxes with values from the database
+    def populate_comboboxes():
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            # Populate Appointment IDs
+            cursor.execute("SELECT Appointment_ID FROM Appointments")
+            appointments = cursor.fetchall()
+            app_id_combobox['values'] = [app[0] for app in appointments]
+
+            # Populate Patient IDs
+            cursor.execute("SELECT Patient_ID FROM Patients")
+            patients = cursor.fetchall()
+            patient_id_combobox['values'] = [patient[0] for patient in patients]
+
+            conn.close()
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error fetching data: {e}")
+
+    populate_comboboxes()
 
     def generate_bill():
         try:
             # Get the values from the input fields
-            app_id = app_id_entry.get().strip()
-            patient_id = patient_id_entry.get().strip()
-            amount = amount_entry.get().strip()
-            billing_date = billing_date_entry.get().strip()
+            app_id = app_id_combobox.get().strip()
+            patient_id = patient_id_combobox.get().strip()
+            amount = entries["Amount"].get().strip()
+            billing_date = entries["Billing Date (YYYY-MM-DD)"].get().strip()
 
             if not app_id or not patient_id or not amount or not billing_date:
                 messagebox.showwarning("Missing Data", "All fields must be filled.")
@@ -71,16 +101,21 @@ def open_billing_window(root):
             conn.close()
 
             messagebox.showinfo("Bill Generated", "The bill has been successfully generated.")
-            app_id_entry.delete(0, tk.END)
-            patient_id_entry.delete(0, tk.END)
-            amount_entry.delete(0, tk.END)
-            billing_date_entry.delete(0, tk.END)
+            app_id_combobox.set('')  # Clear the comboboxes
+            patient_id_combobox.set('')
+            entries["Amount"].delete(0, tk.END)
+            entries["Billing Date (YYYY-MM-DD)"].delete(0, tk.END)
+
+            window.lift()
+            window.focus_force()
+            window.attributes('-topmost', 1)
+            window.after_idle(window.attributes, '-topmost', 0)
 
         except Exception as e:
             messagebox.showerror("Error", f"Error generating bill: {e}")
 
     # Submit Button to generate the bill
-    tk.Button(window, text="Generate Bill ✅", command=generate_bill, bg="lightgreen",width=25).pack(pady=10)
+    tk.Button(window, text="Generate Bill ✅", command=generate_bill, bg="lightgreen" , width=25, height=2).pack(pady=10)
 
     # Listbox to show bills
     listbox = tk.Listbox(window, width=100, height=10)
@@ -90,7 +125,7 @@ def open_billing_window(root):
         try:
             conn = get_connection()
             cursor = conn.cursor()
-            cursor.execute("""
+            cursor.execute(""" 
                 SELECT Patients.First_Name, Patients.Last_Name, Billing.Bill_ID, Billing.Appointment_ID, 
                        Billing.Patient_ID, Billing.Amount, Billing.Status, Billing.Bill_Date
                 FROM Billing
@@ -125,6 +160,11 @@ def open_billing_window(root):
             messagebox.showinfo("Paid", "Bill has been marked as Paid.")
             load_bills()  # Refresh the list of bills
 
+            window.lift()
+            window.focus_force()
+            window.attributes('-topmost', 1)
+            window.after_idle(window.attributes, '-topmost', 0)
+
         except Exception as e:
             messagebox.showerror("Error", f"Error marking bill as paid: {e}")
 
@@ -133,10 +173,11 @@ def open_billing_window(root):
         root.deiconify()  # Unhide the main menu window (if using root as main window)
 
     # Mark as Paid Button
-    tk.Button(window, text="Mark as Paid ✅", command=mark_as_paid, bg="lightblue", width=30).pack(pady=10)
+    tk.Button(window, text="Mark as Paid ✅", command=mark_as_paid, bg="orange", fg="white", width=30, height=2).pack(pady=10)
 
     # Go Back Button
-    tk.Button(window, text="Go Back to Main Menu ⬅️", command=go_back_to_main_menu, bg="lightblue", width=30).pack(pady=10)
+    tk.Button(window, text="Go Back to Main Menu ⬅️", command=go_back_to_main_menu, bg="lightblue", width=30, height=2).pack(pady=10)
 
     # Load the initial list of bills
     load_bills()
+    window.focus_set()  # Set focus to the listbox for better user experience
