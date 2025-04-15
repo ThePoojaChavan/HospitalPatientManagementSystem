@@ -5,7 +5,7 @@ from db_connection import get_connection
 def open_doctor_window(root):
     window = tk.Toplevel(root)
     window.title("🩺 Add Doctor")
-    window.geometry("800x650")
+    window.geometry("800x650+300+100")
 
     labels = [
         "First Name", "Last Name", "Specialization", "Phone Number"

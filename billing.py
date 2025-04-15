@@ -8,7 +8,7 @@ from datetime import datetime
 def open_billing_window(root):
     window = tk.Toplevel(root)
     window.title("💵 Billing Management")
-    window.geometry("800x650")
+    window.geometry("800x650+300+100")
 
     # Create a frame for the billing form
     frame = tk.Frame(window)
@@ -93,7 +93,7 @@ def open_billing_window(root):
 
             # Insert the bill into the Billing table
             cursor.execute(""" 
-                INSERT INTO Billing (Appointment_ID, Patient_ID, Amount, Status, Bill_Date)
+                INSERT INTO Billing (Appointment_ID, Patient_ID, Amount, Status, Bill_date)
                 VALUES (?, ?, ?, ?, ?)
             """, (app_id, patient_id, amount, "Pending", billing_date))
 
@@ -118,7 +118,7 @@ def open_billing_window(root):
     tk.Button(window, text="Generate Bill ✅", command=generate_bill, bg="lightgreen" , width=25, height=2).pack(pady=10)
 
     # Listbox to show bills
-    listbox = tk.Listbox(window, width=100, height=10)
+    listbox = tk.Listbox(window, width=110, height=15)
     listbox.pack(pady=20)
 
     def load_bills():

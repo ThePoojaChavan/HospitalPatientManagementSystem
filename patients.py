@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 def open_patient_window():
     window = tk.Toplevel()
     window.title("🧍 Register Patient")
-    window.geometry("800x650")
+    window.geometry("800x650+300+100")
 
     # Labels & Entries
     labels = [

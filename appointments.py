@@ -8,7 +8,7 @@ def open_appointments_window(root):
     # Create a new window for appointments
     window = tk.Toplevel()
     window.title("📅 Appointments Management")
-    window.geometry("800x650")
+    window.geometry("800x650+300+100")
 
     # Frame for widgets
     frame = tk.Frame(window)
