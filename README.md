@@ -21,8 +21,18 @@ The **Hospital Patient Management System (HPMS)** is a lightweight, user-friendl
 - Includes **Edit** and **Delete** options with confirmation prompts
 - `Treeview` window remains active until manually closed
 
+### 📋 Doctor Management 🩺
+- **Add** doctor records with confirmation prompts.
+
+### 📅 Appointment Scheduling 🏥
+- Schedule appointments by selecting Patient, Doctor, Date, and Time.
+- **Generates** a Patient Appointment Record
+
+### 💳 Billing 💵
+- **Generate** invoices 
+- **Update** bill status from Pending to Paid(after payment)
+
 ### 💽 Database Integration
-## 📊 Database Integration
 
 The Hospital Patient Management System (HPMS) integrates with a relational database and supports basic **CRUD operations** (Create, Read, Update, Delete) for managing patient data, appointments, and billing.
 
@@ -93,14 +103,20 @@ python hpms_main.py
 🔍 Search and Filter Functionality
 Search by patient name, city, or phone number
 
+🧍ID Generation
+Implement prefixed unique IDs (e.g., P101 for patients, D205 for doctors) to enhance data clarity and scalability.
+
 📅 Appointments Module
-Schedule appointments and set reminders
+Setting reminders & including 30-minute interval slots to enhance scheduling flexibility and accuracy.
 
 📖 Medical Records Tracking
 Add diagnosis, prescription, and treatment history
 
 🔐 User Authentication
 Role-based login: Admin, Doctor, Receptionist
+
+🩺 Doctor Management
+Currently supports adding Name, Specialty, and Phone Number; availability details may be added in future versions.
 
 🎨 Responsive UI Enhancements
 Improved layout and error handling
@@ -117,7 +133,7 @@ Age distribution, registration trends, and more
 ## 📁  Folder Structure
 HPMS_app/  
 ├── db_connection.py        					`# Handles database connectivity logic `
- 
+
 ├── patients.py              					`# GUI for adding and managing patient records`
 
 ├── appointments.py          					`# Module for scheduling and managing appointments` 
@@ -134,9 +150,26 @@ HPMS_app/
 
 ├── view_patients.py         					`# View, edit, or delete existing patient records` 
 
-└── README.md                					`# SQLite Database `
+└── README.md                					`# Project overview and documentation `
 
-└── HospitalPatientManagementSystem.db`# Project overview and documentation `
+└── HospitalPatientManagementSystem.db `# SQLite Database for storing patient and hospital data`
+
+├── images/                           `# Folder containing GUI screenshots`
+     
+    ├── image-10.png                  `# Screenshot of Doctor Management screen`
+
+    ├── image-4.png                   `# Screenshot of Billing screen`
+
+    ├── image-5.png                   `# Screenshot of Patient Registration screen`
+
+    ├── image-6.png                   `# Screenshot of Appointment Scheduling screen`
+
+    ├── image-7.png                   `# Screenshot of Main Menu screen`
+
+    ├── image-8.png                   `# Screenshot of View Patients screen`
+
+    ── image-9.png                   `# Screenshot of Hospital Patient Management System overview`
+
 
 
 ## 👥 Contributor
