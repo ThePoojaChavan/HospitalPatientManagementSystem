@@ -6,8 +6,7 @@ def get_connection():
     """Create a connection to the SQLite database."""
     try:
         # Connect to the SQLite database (or create it if it doesn't exist)
-        # connection = sqlite3.connect("HospitalPatientManagementSystem.db")
-        connection = sqlite3.connect("C:\Pooja\MS_DataScience_WSU\Intro to Database Systems_CS665\Project 1_HPMS\HPMS_app")
+        connection = sqlite3.connect("HospitalPatientManagementSystem.db")
         return connection
     except sqlite3.Error as e:
         messagebox.showerror("Database Error", f"Error connecting to database: {e}")

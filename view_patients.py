@@ -39,15 +39,23 @@ def edit_patient(tree):
     edit_win = tk.Toplevel()
     edit_win.grab_set()  # Allow editing even when the main window is active
     edit_win.title("✏️ Edit Patient")
-    edit_win.geometry("500x500")
+    edit_win.geometry("800x650+300+100")
 
     fields = ["First_Name", "Last_Name", "DOB", "Gender", "Phone_Number", "Email"]
     entries = {}
-
-    for idx, field in enumerate(fields):
+    
+    field_to_index = {
+        "First_Name": 1,
+        "Last_Name": 2,
+        "DOB": 3,
+        "Gender": 4,
+        "Phone_Number": 9,
+        "Email": 10
+    }
+    for field in fields:
         tk.Label(edit_win, text=field).pack()
         entry = tk.Entry(edit_win, width=40)
-        entry.insert(0, values[idx+1])  # Skip Patient ID
+        entry.insert(0, values[field_to_index[field]])
         entry.pack(pady=5)
         entries[field] = entry
 
